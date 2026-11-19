@@ -4,7 +4,7 @@ Det här exemplet visar hur en modellklass ser ut. Den innehåller data och enke
 
 Först en enkel klass med egenskaper:
 
-```csharp
+
 public class Book
 {
     public int Id { get; set; }
