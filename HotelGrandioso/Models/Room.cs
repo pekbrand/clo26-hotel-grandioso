@@ -38,3 +38,12 @@ public class HotelBooking
     public int RoomNumber { get; set; }
     public Room Room { get; set; } = null!;
 }
+
+public class RoomOverview
+{
+    public int RoomFloor { get; set; }
+    public int RoomNumber { get; set; }
+    public int SizeM2 { get; set; }
+    public string RoomTypeName { get; set; } = "";
+    public decimal PricePerNight { get; set; }
+}
