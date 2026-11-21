@@ -2,6 +2,7 @@ namespace HotelGrandioso.Models;
 
 public class SpaBooking    
 {
+    public int Id { get; set; }
     public int TreatmentId{get;set;}
     public Treatment Treatment {get;set;} = null!;
     public int GuestId { get; set; }

@@ -1,5 +1,12 @@
-
+using Microsoft.Extensions.Configuration;
 using HotelGrandioso.Models;
+using HotelGrandioso.Data;
+
+
+
+
+
+
 Console.Clear();
 int getValidNumber(int min, int max)
 {
