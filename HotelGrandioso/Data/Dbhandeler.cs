@@ -33,7 +33,6 @@ public class HotelContext : DbContext
     {
         this.connectionString = connectionString;
     }
-    // map keys
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Guest> Guests => Set<Guest>();
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
