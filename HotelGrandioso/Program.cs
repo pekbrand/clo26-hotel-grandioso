@@ -14,6 +14,7 @@ var connectionString = config.GetConnectionString("Default")
 
 using var db = new HotelContext(connectionString);
 var service = new HotelBookingService(db);
-var program = new Meny(service);
+var spaService = new SpaBookingService(db);
+var program = new Meny(service, spaService);
 
 program.choices();

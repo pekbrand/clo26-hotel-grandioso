@@ -140,14 +140,11 @@ namespace HotelGrandioso.Migrations
                     b.Property<int>("TreatmentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TreatmentId1")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TreatmentId");
+                    b.HasIndex("GuestId");
 
-                    b.HasIndex("TreatmentId1");
+                    b.HasIndex("TreatmentId");
 
                     b.ToTable("SpaBooking");
                 });
@@ -216,13 +213,13 @@ namespace HotelGrandioso.Migrations
                 {
                     b.HasOne("HotelGrandioso.Models.Guest", "Guest")
                         .WithMany()
-                        .HasForeignKey("TreatmentId")
+                        .HasForeignKey("GuestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("HotelGrandioso.Models.Treatment", "Treatment")
                         .WithMany()
-                        .HasForeignKey("TreatmentId1")
+                        .HasForeignKey("TreatmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

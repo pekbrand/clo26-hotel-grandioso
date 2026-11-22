@@ -47,3 +47,12 @@ public class RoomOverview
     public string RoomTypeName { get; set; } = "";
     public decimal PricePerNight { get; set; }
 }
+
+public class BookingsOverview
+{
+public int BookingId { get; set; }
+public string GuestName	{ get; set; }
+public int RoomNumber { get; set; }
+public DateOnly CheckIn	 { get; set; }
+public DateOnly CheckOut { get; set; }
+}

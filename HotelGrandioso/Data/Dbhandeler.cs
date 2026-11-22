@@ -84,14 +84,19 @@ public class HotelContext : DbContext
             .HasForeignKey(SpaBooking => SpaBooking.GuestId);
 
         modelBuilder.Entity<SpaBooking>()
-            .HasOne(SpaBooking => SpaBooking.Guest)
+            .HasOne(spaBooking => spaBooking.Treatment)
             .WithMany()
-            .HasForeignKey(SpaBooking => SpaBooking.TreatmentId);
+            .HasForeignKey(spaBooking => spaBooking.TreatmentId);
 
         modelBuilder.Entity<RoomPrice>()
             .HasOne<Room>()
             .WithMany()
             .HasForeignKey(RoomPrice => RoomPrice.RoomNumber);
+
+        modelBuilder.Entity<Room>()
+            .HasOne(room => room.RoomType)
+            .WithMany()
+            .HasForeignKey(room => room.RoomTypeId);
 
     }
 

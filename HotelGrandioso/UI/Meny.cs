@@ -9,9 +9,14 @@ public class Meny
 
     private readonly RoomView roomView = new RoomView();
 
-    public Meny(HotelBookingService service)
+    private readonly SpaBookingService spaService;
+
+    public Meny(
+        HotelBookingService service,
+        SpaBookingService spaService)
     {
         bookingService = service;
+        this.spaService = spaService;
     }
 
     (DateOnly CheckIn, DateOnly CheckOut) getBookingDates()
@@ -95,6 +100,25 @@ public class Meny
         }
     }
 
+    int getValidTreatment(List<Treatment> treatments)
+    {
+        while (true)
+        {
+            Console.Write("Vilken behandling vill du boka? Ange ID: ");
+            string? input = Console.ReadLine();
+
+            if (int.TryParse(input, out int treatmentNumber))
+            {
+               if (treatments.Any(treatment => treatment.TreatmentId == treatmentNumber))
+                {
+                    return treatmentNumber;
+                }
+            }
+
+            Console.WriteLine("Ange ett ID som existerar i listan.");
+        }
+    }
+
     public void choices()
     {
         bool running = true;
@@ -116,7 +140,7 @@ public class Meny
             switch (option)
             {
                 case 1:
-                    {
+                {       
                     Console.Clear();
                     Console.WriteLine("1. Boka rum:.");
                     var dates = getBookingDates();
@@ -131,11 +155,17 @@ public class Meny
                     dates.CheckIn,
                     dates.CheckOut,
                     guestName);
+                   var selectedRoomInfo = rooms.First(room =>
+                        room.RoomNumber == selectedRoom);
+
+                    int nights = dates.CheckOut.DayNumber - dates.CheckIn.DayNumber;
+                    decimal totalPrice = nights * selectedRoomInfo.PricePerNight;
                     if (booked)
                     {
                         Console.WriteLine(
                             $"Tack {guestName}, ditt rum är {selectedRoom} " +
-                            $"från {dates.CheckIn} till {dates.CheckOut}.");
+                            $"från {dates.CheckIn} till {dates.CheckOut}."+
+                            $"Bokade nätter {nights}, Totalt pris: {totalPrice}");
                     }
                     else
                     {
@@ -144,17 +174,29 @@ public class Meny
                     Console.WriteLine("Tryck Enter för att fortsätta.");
                     Console.ReadLine();
                     break;
-                    }
+                }
 
                 case 2:
+                {
                     Console.Clear();
                     Console.WriteLine("2. Avboka:");
+                    var dates = getBookingDates();
+                    var bookings = bookingService.GetBookings(dates.CheckIn, dates.CheckOut);
+                    roomView.ShowBookings(bookings);
+                    Console.Write("Ange boknings-ID att avboka: ");
+                    int bookingId = getValidNumber(1,99999);
+                    bool cancelled = bookingService.CancelBooking(bookingId);
                     break;
+                }
                 case 3:
+                {
                     Console.Clear();
                     Console.WriteLine("3. Visa bokningar:");
+                    var dates = getBookingDates();
+                    var bookings = bookingService.GetBookings(dates.CheckIn, dates.CheckOut);
+                    roomView.ShowBookings(bookings);
                     break;
-                    
+                }
                 case 4:
                 {
                     Console.Clear();
@@ -167,14 +209,71 @@ public class Meny
                     break;
                 }
                 case 5:
+                {
                     Console.Clear();
                     Console.WriteLine("5. Boka spa:");
+                    var treatments = spaService.GetTreatments();
+                    roomView.ShowTreatments(treatments);
+                    int selectedTreatment = getValidTreatment(treatments);
+                    DateOnly spaDate = getValidDate("Ange Datum:");
+                    Console.WriteLine("Ange Namn:");
+                    string guestName = Console.ReadLine();
+                    bool booked = spaService.BookTreatment(
+                        selectedTreatment,
+                        spaDate,
+                        guestName);
+
+                    if (booked)
+                    {
+                        Console.WriteLine($"Tack {guestName}! Din spabehandling är bokad {spaDate:yyyy-MM-dd}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Bokningen misslyckades.");
+}
+                    Console.WriteLine("Tryck på Enter för att fortsätta.");
+                    Console.ReadLine();
                     break;
+                }
                 case 6:
+                {
                     Console.Clear();
                     Console.WriteLine("6. Byta Pris:");
+                    Console.Write("Rumsnummer: ");
+                    int roomNumber = getValidNumber(1, 99999);
 
+                    decimal newPrice;
+
+                    while (true)
+                    {
+                        Console.Write("Nytt pris per natt: ");
+
+                        if (decimal.TryParse(Console.ReadLine(), out newPrice)
+                            && newPrice > 0)
+                        {
+                            break;
+                        }
+
+                        Console.WriteLine("Ange ett giltigt pris större än 0.");
+                    }
+
+                    bool changed = bookingService.ChangeRoomPrice(
+                        roomNumber, newPrice);
+
+                    if (changed)
+                    {
+                        Console.WriteLine("Priset är uppdaterat och gäller från idag.");
+                    }
+                    else
+                    {
+                        Console.WriteLine(
+                            "Priset kunde inte ändras. Rummet saknar ett aktuellt pris eller finns inte.");
+                    }
+
+                    Console.WriteLine("Tryck Enter för att fortsätta.");
+                    Console.ReadLine();
                     break;
+                }
                 case 7:
                     Console.WriteLine("Tack för idag!");
                     running = false;
