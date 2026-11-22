@@ -1,6 +1,9 @@
 # C# / .NET
 bin/
 obj/
+*.db-wal
+*.db-shm
+*.sqbpro
 *.user
 .vs/
 

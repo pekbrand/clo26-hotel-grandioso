@@ -1,6 +1,12 @@
 # Hotel Grandioso
 
 Ett konsolbaserat bokningssystem byggt med C#, EF Core och SQLite.
+appsettings.json ligger git eftersom det inte ligger någon hemlig-nyckel eller liknande i de
+utan bara är en sträng som pekar mot databasen i projekt mappen! 
+
+- [ ] Visa alla rum (med typ och pris) 
+Tolkade detta som att jag skulle visa alla lediga rum, med tanke på menyn som var med i exemplet
+på uppgiften.
 
 ## Funktioner
 
@@ -51,12 +57,8 @@ programmets aktuella arbetsmapp.
 
 ### Startdata
 
-Rum, rumstyper, priser och behandlingar har under utvecklingen lagts
-in manuellt i SQLite-databasen. Migrationerna skapar tabellerna, men
-lägger inte automatiskt in dessa uppgifter.
-
-**Inför inlämningen behöver startdata göras tillgängliga och detta
-avsnitt uppdateras med hur de laddas in.**
+Jag har lagt till information manuellt, men databasen ligger i projektet så
+skall inte vara några problem att komma igång med appen.
 
 ## Kodstruktur och ansvar
 
@@ -94,6 +96,9 @@ migrationer skapas.
 Modellerna beskriver rum, gäster, bokningar, rumstyper, priser och
 spabehandlingar.
 
+Valde att försöka bara ha två .cs hade kunnat göra en för varje klass men eftersom dem är väldigt små tyckte jag det var okej att 
+lägga in i samma cs.
+
 `RoomOverview` och `BookingsOverview` är resultatklasser för
 information som ska visas i UI. De är inte egna databastabeller.
 
@@ -118,16 +123,13 @@ Service kontrollerar tillgängligheten igen innan bokningen sparas.
 Det skyddar även om någon anropar bokningsmetoden utan att först
 hämta listan med lediga rum.
 
-Kontrollen och sparandet har ännu inget gemensamt skydd för
-samtidiga bokningsförsök från flera programinstanser.
-
 ## Prissättning
 
 Priser lagras i `RoomPrice` för att kunna ha olika giltighetsperioder.
 
 - `FromDate` är inkluderande.
 - `ToDate` är exkluderande.
-- Ett tomt `ToDate` betyder att priset gäller tills vidare.
+- Ett tomt (null) `ToDate` betyder att priset gäller tills vidare.
 
 Prisändringar gäller från dagens datum. Om prisraden redan börjar
 idag uppdateras beloppet. Annars avslutas den gamla perioden och
@@ -144,6 +146,8 @@ och incheckningsdatumets `DayNumber`.
 
 I nuvarande version används dagens nattpris för hela vistelsen.
 Beräkningen delar inte upp vistelsen mellan olika prisperioder.
+dvs att det är samma pris per natt hela bokningen även om
+man uppdaterar priset undervistelsen.
 
 ## UML-klassdiagram
 
@@ -204,11 +208,11 @@ classDiagram
         decimal Price
     }
 
-    RoomType "1" --> "0..*" Room : klassificerar
-    Room "1" --> "0..*" RoomPrice : har prisperioder
-    Room "1" --> "0..*" HotelBooking : bokas
-    Guest "1" --> "0..*" HotelBooking : har
-    Guest "1" --> "0..*" SpaBooking : har
+    RoomType "1" --> "0*" Room : klassificerar
+    Room "1" --> "0*" RoomPrice : har prisperioder
+    Room "1" --> "0*" HotelBooking : bokas
+    Guest "1" --> "0*" HotelBooking : har
+    Guest "1" --> "0*" SpaBooking : har
     Treatment "1" --> "0..*" SpaBooking : bokas
 ```
 
@@ -225,28 +229,37 @@ Vid avbokning tas hotellbokningen bort. Gästen finns kvar.
 
 ## GDPR
 
-Jag har granskat hotellchefens önskade gästfält och valt att
-bara lagra `Id` och `Name`. Jag vill begränsa uppgifterna till
-sådant som behövs för bokningssystemets funktion.
-
-| Fält | Val och motivering |
-|---|---|
-| Id | Behålls som intern identifierare och för att koppla gästen till bokningar. Namn är inte unika. |
-| Name | Behålls för att receptionen ska kunna identifiera och hantera bokningen. |
-| HairColor | Utelämnas eftersom hårfärg inte behövs för att boka rum eller behandlingar. |
-| HeightCm | Utelämnas eftersom längd inte behövs för systemets funktioner. |
-| Religion | Utelämnas eftersom uppgiften inte behövs och är en känslig personuppgift. |
-
-Ett internt ID gör inte gästen anonym, eftersom det är kopplat
-till namn och bokningar.
-
-I ett system för verklig drift skulle det även behövas rutiner
-för åtkomst, gallring och hantering av personuppgifter.
-Den här skolversionen har ingen automatisk gallring.
+Eftersom vi bara skall spara information som är nödvändig för syftet har jag bara valt namn.
+Hade detta projektet varit verkligt hade jag även sparat e-mailadress och även telefon nummer.
+för att kunna skicka ut en bekräftelse anting på telefon eller mail. samt att det kan vara nödvändigt att komma 
+ikontakt med kunden både innan och efter besöket.
 
 ## Begränsningar
 
 - Spabokningar har datum men inget klockslag eller kapacitetsskydd.
 - En ny gästpost skapas vid varje bokning; befintliga gäster återanvänds inte.
+    Här hade man kunnat göra en storförbättring speciellt om bokningen användes i typ en webbläsare,
+    då hade man kunnat uppdatera listan för varje bokstav och klicka i en existerande kunde, men visste inte hur jag skulle göra detta
+    i en consoleapp.
 - Bokningens pris sparas inte som ett separat historiskt bokningsbelopp.
+    akutellt pris och historiken ligger i samma tabel, men eftersom jag kikar på att priset gäller just nu borde det inte vara några större problem
+    dock kan detta bli lite värre om man uppdaterar samma pris samma dag, men eftersom det nyaste priset skall ha null i sig så borde det ändå lösa sig.
 - Tillgänglighetskontrollen behöver förstärkas för samtidiga bokningsförsök.
+
+## Designmönster
+
+Jag följde den lagerindelning vi fick i uppgiften. Tanken var att göra koden lätt att läsa och att ge varje del ett tydligt ansvar.
+
+- **Data:** I `Dbhandeler.cs` finns `HotelContext`, som sköter kopplingen till SQLite och beskriver relationerna mellan entiteterna för EF Core.
+- **Models:** Här finns entiteterna, till exempel rum, gäster och bokningar, samt modellerna som används för att visa listor i konsolen.
+- **Services:** Här finns logiken för bland annat bokning och avbokning. Tjänsterna använder `HotelContext` för att läsa och spara data. Jag valde att samla databasanropen i tjänsterna eftersom projektet är litet. Det gör att menyn kan använda tjänsterna utan att behöva veta hur databasen fungerar.
+- **UI:** `Meny.cs` hanterar menyval och inmatning. Jag flyttade ut flera konsolutskrifter till `RoomView` i `ConsoleLines.cs` för att göra menyn lättare att läsa och kunna återanvända utskrifterna.
+
+I efterhand hade jag delat upp `Meny.cs` mer. Den blev några hundra rader, vilket var mer än jag tänkt mig. Med en egen metod för varje menyval hade huvudmenyn blivit kortare och det hade varit lättare att följa till exempel bokning och avbokning var för sig.
+
+## Tekniker
+
+- C# och .NET 10 för konsolprogrammet
+- Entity Framework Core Code First med migrationer för databasens struktur
+- SQLite för lagring
+- LINQ för databasfrågor, till exempel för att hitta lediga rum
