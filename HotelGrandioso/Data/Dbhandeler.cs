@@ -98,6 +98,6 @@ public class HotelContext : DbContext
             .HasForeignKey(room => room.RoomTypeId);
 
     }
-
+    
 }
 

@@ -5,18 +5,20 @@ namespace HotelGrandioso.UI;
 
 public class Meny
 {
-    private readonly HotelBookingService bookingService;
+    private readonly HotelBookingService Service;
+
+    private readonly HotelRepository Repository;
 
     private readonly RoomView roomView = new RoomView();
 
-    private readonly SpaBookingService spaService;
+    
 
     public Meny(
-        HotelBookingService service,
-        SpaBookingService spaService)
+        HotelRepository repository,HotelBookingService bookingService
+        )
     {
-        bookingService = service;
-        this.spaService = spaService;
+        Repository = repository;
+        Service = bookingService; 
     }
 
     (DateOnly CheckIn, DateOnly CheckOut) getBookingDates()
@@ -144,13 +146,13 @@ public class Meny
                     Console.Clear();
                     Console.WriteLine("1. Boka rum:.");
                     var dates = getBookingDates();
-                    var rooms = bookingService.GetRooms(dates.CheckIn, dates.CheckOut);
+                    var rooms = Repository.GetRooms(dates.CheckIn, dates.CheckOut);
                     roomView.ShowRooms(rooms);
                     int selectedRoom = getAvailableRoom(rooms);
                     Console.Clear();
                     Console.Write("Gästens namn: ");
                     string guestName = Console.ReadLine() ?? "";
-                    bool booked = bookingService.BookRoom(
+                    bool booked = Service.BookRoom(
                     selectedRoom,
                     dates.CheckIn,
                     dates.CheckOut,
@@ -181,11 +183,11 @@ public class Meny
                     Console.Clear();
                     Console.WriteLine("2. Avboka:");
                     var dates = getBookingDates();
-                    var bookings = bookingService.GetBookings(dates.CheckIn, dates.CheckOut);
+                    var bookings = Repository.GetBookings(dates.CheckIn, dates.CheckOut);
                     roomView.ShowBookings(bookings);
                     Console.Write("Ange boknings-ID att avboka: ");
                     int bookingId = getValidNumber(1,99999);
-                    bool cancelled = bookingService.CancelBooking(bookingId);
+                    bool cancelled = Repository.CancelBooking(bookingId);
                     break;
                 }
                 case 3:
@@ -193,7 +195,7 @@ public class Meny
                     Console.Clear();
                     Console.WriteLine("3. Visa bokningar:");
                     var dates = getBookingDates();
-                    var bookings = bookingService.GetBookings(dates.CheckIn, dates.CheckOut);
+                    var bookings = Repository.GetBookings(dates.CheckIn, dates.CheckOut);
                     roomView.ShowBookings(bookings);
                     break;
                 }
@@ -202,7 +204,7 @@ public class Meny
                     Console.Clear();
                     Console.WriteLine("4. Visa lediga rum:");
                     var dates = getBookingDates();
-                    var rooms = bookingService.GetRooms(dates.CheckIn, dates.CheckOut);
+                    var rooms = Repository.GetRooms(dates.CheckIn, dates.CheckOut);
                     roomView.ShowRooms(rooms);
                     Console.WriteLine("Tryck på Enter för att fortsätta.");
                     Console.ReadLine();
@@ -212,13 +214,13 @@ public class Meny
                 {
                     Console.Clear();
                     Console.WriteLine("5. Boka spa:");
-                    var treatments = spaService.GetTreatments();
+                    var treatments = Repository.GetTreatments();
                     roomView.ShowTreatments(treatments);
                     int selectedTreatment = getValidTreatment(treatments);
                     DateOnly spaDate = getValidDate("Ange Datum:");
                     Console.WriteLine("Ange Namn:");
                     string guestName = Console.ReadLine();
-                    bool booked = spaService.BookTreatment(
+                    bool booked = Repository.BookTreatment(
                         selectedTreatment,
                         spaDate,
                         guestName);
@@ -257,7 +259,7 @@ public class Meny
                         Console.WriteLine("Ange ett giltigt pris större än 0.");
                     }
 
-                    bool changed = bookingService.ChangeRoomPrice(
+                    bool changed = Service.ChangeRoomPrice(
                         roomNumber, newPrice);
 
                     if (changed)

@@ -13,8 +13,9 @@ var connectionString = config.GetConnectionString("Default")
     ?? throw new InvalidOperationException("Connection string saknas.");
 
 using var db = new HotelContext(connectionString);
-var service = new HotelBookingService(db);
-var spaService = new SpaBookingService(db);
-var program = new Meny(service, spaService);
+var HotelRepository = new HotelRepository(db);
+var HotelBookingService = new HotelBookingService(HotelRepository);
+
+var program = new Meny(HotelRepository,HotelBookingService);
 
 program.choices();
