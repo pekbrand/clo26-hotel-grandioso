@@ -72,16 +72,11 @@ Rummen grupperas efter våning.
 
 ### Services
 
-`HotelBookingService` hanterar rumsbokningar, avbokningar,
-tillgänglighetskontroll och prisändringar.
+`HotelBookingService` 
+hanterar reglerna för rumsbokningar och prisändringar. Den kontrollerar till exempel att utcheckningen är efter incheckningen och avgör om bokningen får fortsätta utifrån repositoryts svar.
 
-`SpaBookingService` hämtar behandlingar och sparar spabokningar.
-
-Databasanropen ligger i serviceklasserna och använder LINQ och
-EF Core. Menyn behöver därför inte känna till hur data hämtas
-eller sparas. I detta projekt har jag valt att inte lägga till
-ett separat repositorylager.
-
+`HotelRepository` 
+läser och sparar data med LINQ och EF Core via `HotelContext`. Enkla kontroller som hör till databasanropet ligger också här, till exempel att se om ett boknings-ID finns innan bokningen tas bort.
 ### Data
 
 `HotelContext` ärver från EF Cores `DbContext`. Klassen ger tillgång

@@ -3,6 +3,7 @@ bin/
 obj/
 *.db-wal
 *.db-shm
+*.db
 *.sqbpro
 *.user
 .vs/
